@@ -3,3 +3,6 @@ nltk==3.8
 gTTS
 speechrecognition
 IPython
+gtts
+pydub
+
