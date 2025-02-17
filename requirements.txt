@@ -1,5 +1,6 @@
-streamlit
-nltk
-gTTS
-speechrecognition
-ipython
+streamlit==1.17.0
+nltk==3.7
+gTTS==2.2.3
+SpeechRecognition==3.8.1
+pyaudio==0.2.11
+IPython==7.34.0
