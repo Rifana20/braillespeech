@@ -1,13 +1,45 @@
+import streamlit as st
 import nltk
 from gtts import gTTS
+from speech_recognition import Recognizer, Microphone
+from IPython.display import Audio, display
 import os
-import streamlit as st
 
-# Ensure NLTK punkt data is downloaded
-try:
-    nltk.data.find('tokenizers/punkt')
-except LookupError:
-    nltk.download('punkt')
+nltk.download('punkt')
+
+# Custom CSS for styling
+st.markdown("""
+    <style>
+    body {
+        background-color: #f5f3e7;
+        color: #4b3f2f;
+        font-family: 'Helvetica', sans-serif;
+    }
+    .main .block-container {
+        background-color: #f5f3e7;
+    }
+    .stButton>button {
+        background-color: #d2b48c;
+        color: #fff;
+        border-radius: 10px;
+        border: none;
+        padding: 10px 20px;
+        margin: 5px;
+    }
+    .stTextInput>div>div>input {
+        background-color: #fdf6e3;
+        color: #4b3f2f;
+        border: 1px solid #d2b48c;
+        border-radius: 5px;
+    }
+    .stRadio>div>div {
+        background-color: #d2b48c;
+        color: #fff;
+        border-radius: 5px;
+        padding: 5px;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
 # Braille and punctuation mappings
 braille_dict = {
@@ -68,11 +100,16 @@ if option == "Enter text manually":
     input_text = st.text_input("Enter your text:")
 elif option == "Use speech input":
     st.info("Click the button and speak...")
-
-    # Example placeholder text, simulating speech-to-text
     if st.button("🎙️ Start Recording"):
-        input_text = "This is a test of speech-to-text functionality."
-        st.success(f"Recognized Text: {input_text}")
+        recognizer = Recognizer()
+        with Microphone() as source:
+            st.write("Listening...")
+            audio = recognizer.listen(source)
+            try:
+                input_text = recognizer.recognize_google(audio)
+                st.success(f"Recognized Text: {input_text}")
+            except Exception as e:
+                st.error(f"Error: {e}")
 
 if input_text:
     braille_unicode = convert_to_braille_unicode(input_text)
