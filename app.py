@@ -123,7 +123,3 @@ if input_text:
         st.audio(audio.read(), format="audio/mp3")
     os.remove(audio_file)
 
-st.sidebar.title("⚙️ Deployment Guide")
-st.sidebar.write("Run the following command to launch this app:")
-st.sidebar.code("streamlit run streamlit_braille_converter.py")
-st.sidebar.write("To deploy on Streamlit Cloud, push your code to GitHub and link your repo.")
