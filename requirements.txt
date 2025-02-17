@@ -1,11 +1,4 @@
 streamlit
-nltk==3.8
-gTTS
-speechrecognition
-IPython
+nltk
 gtts
-pydub
-sounddevice
-numpy
-
-
+speechrecognition
