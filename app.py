@@ -2,8 +2,6 @@ import streamlit as st
 import nltk
 from gtts import gTTS
 from speech_recognition import Recognizer, AudioData
-import sounddevice as sd
-import numpy as np
 import io
 import os
 
@@ -91,12 +89,15 @@ def text_to_speech(text):
     tts.save("output.mp3")
     return "output.mp3"
 
-# Function to record audio using sounddevice
-def record_audio(duration=5, fs=16000):
-    st.write("Recording... Please speak now.")
-    audio_data = sd.rec(int(duration * fs), samplerate=fs, channels=1, dtype='int16')
-    sd.wait()  # Wait until the recording is finished
-    return audio_data
+# Function to process uploaded audio file
+def process_audio(uploaded_file):
+    recognizer = Recognizer()
+    audio_data = AudioData(uploaded_file.read(), 16000, 2)  # 16000 Hz, 2 bytes per sample
+    try:
+        text = recognizer.recognize_google(audio_data)
+        return text
+    except Exception as e:
+        return None
 
 st.title("🧠 Speech-to-Braille Converter")
 st.write("Convert your speech or text into Braille with an elegant cream-brown interface.")
@@ -108,16 +109,13 @@ input_text = ""
 if option == "Enter text manually":
     input_text = st.text_input("Enter your text:")
 elif option == "Use speech input":
-    st.info("Click the button and speak...")
-    if st.button("🎙️ Start Recording"):
-        audio_data = record_audio()
-        recognizer = Recognizer()
-        audio = AudioData(audio_data, 16000, 2)  # 16000 Hz, 2 bytes per sample
-        try:
-            input_text = recognizer.recognize_google(audio)
+    uploaded_audio = st.file_uploader("Upload your audio file (WAV or MP3)", type=["wav", "mp3"])
+    if uploaded_audio is not None:
+        input_text = process_audio(uploaded_audio)
+        if input_text:
             st.success(f"Recognized Text: {input_text}")
-        except Exception as e:
-            st.error(f"Error: {e}")
+        else:
+            st.error("Sorry, could not recognize the speech.")
 
 if input_text:
     braille_unicode = convert_to_braille_unicode(input_text)
@@ -130,5 +128,4 @@ if input_text:
     with open(audio_file, "rb") as audio:
         st.audio(audio.read(), format="audio/mp3")
     os.remove(audio_file)
-
 
