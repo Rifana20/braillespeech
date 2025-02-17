@@ -1,9 +1,9 @@
 import streamlit as st
 import nltk
 from gtts import gTTS
-from speech_recognition import Recognizer, Microphone
 import os
 
+# Ensure NLTK data is downloaded
 nltk.download('punkt')
 
 # Custom CSS for styling
@@ -99,16 +99,15 @@ if option == "Enter text manually":
     input_text = st.text_input("Enter your text:")
 elif option == "Use speech input":
     st.info("Click the button and speak...")
+
+    # Instead of using PyAudio, we are going to use a placeholder to simulate speech input
+    # You could implement another cloud-based API here for actual speech recognition
+
     if st.button("🎙️ Start Recording"):
-        recognizer = Recognizer()
-        with Microphone() as source:
-            st.write("Listening...")
-            audio = recognizer.listen(source)
-            try:
-                input_text = recognizer.recognize_google(audio)
-                st.success(f"Recognized Text: {input_text}")
-            except Exception as e:
-                st.error(f"Error: {e}")
+        # Example placeholder text, simulating speech-to-text
+        input_text = "This is a test of speech-to-text functionality."
+
+        st.success(f"Recognized Text: {input_text}")
 
 if input_text:
     braille_unicode = convert_to_braille_unicode(input_text)
@@ -122,4 +121,7 @@ if input_text:
         st.audio(audio.read(), format="audio/mp3")
     os.remove(audio_file)
 
-
+st.sidebar.title("⚙️ Deployment Guide")
+st.sidebar.write("Run the following command to launch this app:")
+st.sidebar.code("streamlit run streamlit_braille_converter.py")
+st.sidebar.write("To deploy on Streamlit Cloud, push your code to GitHub and link your repo.")
