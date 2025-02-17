@@ -5,4 +5,7 @@ speechrecognition
 IPython
 gtts
 pydub
+sounddevice
+numpy
+
 
