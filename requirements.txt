@@ -3,3 +3,4 @@ nltk==3.7
 gtts==2.2.3
 SpeechRecognition==3.8.1
 altair==4.2.0
+PyAudio==0.2.11
