@@ -1,44 +1,13 @@
-import streamlit as st
 import nltk
 from gtts import gTTS
 import os
+import streamlit as st
 
-# Ensure NLTK data is downloaded
-nltk.download('punkt')
-
-# Custom CSS for styling
-st.markdown("""
-    <style>
-    body {
-        background-color: #f5f3e7;
-        color: #4b3f2f;
-        font-family: 'Helvetica', sans-serif;
-    }
-    .main .block-container {
-        background-color: #f5f3e7;
-    }
-    .stButton>button {
-        background-color: #d2b48c;
-        color: #fff;
-        border-radius: 10px;
-        border: none;
-        padding: 10px 20px;
-        margin: 5px;
-    }
-    .stTextInput>div>div>input {
-        background-color: #fdf6e3;
-        color: #4b3f2f;
-        border: 1px solid #d2b48c;
-        border-radius: 5px;
-    }
-    .stRadio>div>div {
-        background-color: #d2b48c;
-        color: #fff;
-        border-radius: 5px;
-        padding: 5px;
-    }
-    </style>
-""", unsafe_allow_html=True)
+# Ensure NLTK punkt data is downloaded
+try:
+    nltk.data.find('tokenizers/punkt')
+except LookupError:
+    nltk.download('punkt')
 
 # Braille and punctuation mappings
 braille_dict = {
@@ -100,13 +69,9 @@ if option == "Enter text manually":
 elif option == "Use speech input":
     st.info("Click the button and speak...")
 
-    # Instead of using PyAudio, we are going to use a placeholder to simulate speech input
-    # You could implement another cloud-based API here for actual speech recognition
-
+    # Example placeholder text, simulating speech-to-text
     if st.button("🎙️ Start Recording"):
-        # Example placeholder text, simulating speech-to-text
         input_text = "This is a test of speech-to-text functionality."
-
         st.success(f"Recognized Text: {input_text}")
 
 if input_text:
@@ -121,7 +86,3 @@ if input_text:
         st.audio(audio.read(), format="audio/mp3")
     os.remove(audio_file)
 
-st.sidebar.title("⚙️ Deployment Guide")
-st.sidebar.write("Run the following command to launch this app:")
-st.sidebar.code("streamlit run streamlit_braille_converter.py")
-st.sidebar.write("To deploy on Streamlit Cloud, push your code to GitHub and link your repo.")
