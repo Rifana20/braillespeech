@@ -1,4 +1,5 @@
 streamlit
-gTTS
 nltk
+gTTS
+speechrecognition
 IPython
