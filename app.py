@@ -5,41 +5,8 @@ from speech_recognition import Recognizer, AudioData
 import io
 import os
 
+# Download the necessary NLTK data for tokenization
 nltk.download('punkt')
-
-# Custom CSS for styling
-st.markdown("""
-    <style>
-    body {
-        background-color: #f5f3e7;
-        color: #4b3f2f;
-        font-family: 'Helvetica', sans-serif;
-    }
-    .main .block-container {
-        background-color: #f5f3e7;
-    }
-    .stButton>button {
-        background-color: #d2b48c;
-        color: #fff;
-        border-radius: 10px;
-        border: none;
-        padding: 10px 20px;
-        margin: 5px;
-    }
-    .stTextInput>div>div>input {
-        background-color: #fdf6e3;
-        color: #4b3f2f;
-        border: 1px solid #d2b48c;
-        border-radius: 5px;
-    }
-    .stRadio>div>div {
-        background-color: #d2b48c;
-        color: #fff;
-        border-radius: 5px;
-        padding: 5px;
-    }
-    </style>
-""", unsafe_allow_html=True)
 
 # Braille and punctuation mappings
 braille_dict = {
