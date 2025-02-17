@@ -1,8 +1,8 @@
 import streamlit as st
 import nltk
 from gtts import gTTS
-from speech_recognition import Recognizer, Microphone
-from IPython.display import Audio, display
+from speech_recognition import Recognizer
+from io import BytesIO
 import os
 
 nltk.download('punkt')
@@ -99,17 +99,17 @@ input_text = ""
 if option == "Enter text manually":
     input_text = st.text_input("Enter your text:")
 elif option == "Use speech input":
-    st.info("Click the button and speak...")
-    if st.button("🎙️ Start Recording"):
+    st.info("Upload an audio file for speech recognition...")
+    audio_file = st.file_uploader("Choose an audio file...", type=["wav", "mp3"])
+    if audio_file is not None:
         recognizer = Recognizer()
-        with Microphone() as source:
-            st.write("Listening...")
-            audio = recognizer.listen(source)
-            try:
-                input_text = recognizer.recognize_google(audio)
-                st.success(f"Recognized Text: {input_text}")
-            except Exception as e:
-                st.error(f"Error: {e}")
+        audio_data = BytesIO(audio_file.read())
+        try:
+            audio = recognizer.record(audio_data)
+            input_text = recognizer.recognize_google(audio)
+            st.success(f"Recognized Text: {input_text}")
+        except Exception as e:
+            st.error(f"Error: {e}")
 
 if input_text:
     braille_unicode = convert_to_braille_unicode(input_text)
@@ -122,4 +122,5 @@ if input_text:
     with open(audio_file, "rb") as audio:
         st.audio(audio.read(), format="audio/mp3")
     os.remove(audio_file)
+
 
