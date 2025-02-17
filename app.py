@@ -1,8 +1,10 @@
 import streamlit as st
 import nltk
 from gtts import gTTS
-from speech_recognition import Recognizer
-from io import BytesIO
+from speech_recognition import Recognizer, AudioData
+import sounddevice as sd
+import numpy as np
+import io
 import os
 
 nltk.download('punkt')
@@ -89,6 +91,13 @@ def text_to_speech(text):
     tts.save("output.mp3")
     return "output.mp3"
 
+# Function to record audio using sounddevice
+def record_audio(duration=5, fs=16000):
+    st.write("Recording... Please speak now.")
+    audio_data = sd.rec(int(duration * fs), samplerate=fs, channels=1, dtype='int16')
+    sd.wait()  # Wait until the recording is finished
+    return audio_data
+
 st.title("🧠 Speech-to-Braille Converter")
 st.write("Convert your speech or text into Braille with an elegant cream-brown interface.")
 
@@ -99,13 +108,12 @@ input_text = ""
 if option == "Enter text manually":
     input_text = st.text_input("Enter your text:")
 elif option == "Use speech input":
-    st.info("Upload an audio file for speech recognition...")
-    audio_file = st.file_uploader("Choose an audio file...", type=["wav", "mp3"])
-    if audio_file is not None:
+    st.info("Click the button and speak...")
+    if st.button("🎙️ Start Recording"):
+        audio_data = record_audio()
         recognizer = Recognizer()
-        audio_data = BytesIO(audio_file.read())
+        audio = AudioData(audio_data, 16000, 2)  # 16000 Hz, 2 bytes per sample
         try:
-            audio = recognizer.record(audio_data)
             input_text = recognizer.recognize_google(audio)
             st.success(f"Recognized Text: {input_text}")
         except Exception as e:
