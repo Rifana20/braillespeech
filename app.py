@@ -4,9 +4,19 @@ from gtts import gTTS
 from speech_recognition import Recognizer, AudioFile
 import os
 import io
+import tempfile
 
 # Ensure necessary NLTK data is downloaded
-nltk.download('punkt')
+nltk_data_path = os.path.join(os.getcwd(), "nltk_data")
+if not os.path.exists(nltk_data_path):
+    os.makedirs(nltk_data_path)
+
+nltk.data.path.append(nltk_data_path)
+
+try:
+    nltk.data.find('tokenizers/punkt')
+except LookupError:
+    nltk.download('punkt', download_dir=nltk_data_path)
 
 # Braille and punctuation mappings
 braille_dict = {
@@ -54,10 +64,11 @@ def convert_to_braille_unicode(text):
     return ''.join(braille_output)
 
 def text_to_speech(text):
-    """Converts text to speech and saves as an MP3 file."""
+    """Converts text to speech and returns the audio file path."""
     tts = gTTS(text=text, lang='en')
-    tts.save("output.mp3")
-    return "output.mp3"
+    temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".mp3")
+    tts.save(temp_file.name)
+    return temp_file.name
 
 def process_audio(uploaded_file):
     """Processes uploaded audio file and converts speech to text."""
@@ -71,6 +82,8 @@ def process_audio(uploaded_file):
             return None
 
 # Streamlit UI
+st.set_page_config(page_title="Speech-to-Braille Converter", layout="centered")
+
 st.title("🧠 Speech-to-Braille Converter")
 st.write("Convert your speech or text into Braille with an elegant cream-brown interface.")
 
