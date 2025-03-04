@@ -1,5 +1,5 @@
 streamlit
 nltk
 gtts
-speechrecognition
-ipython
+SpeechRecognition
+pydub
