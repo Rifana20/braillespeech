@@ -1,10 +1,10 @@
 import streamlit as st
 import nltk
 from gtts import gTTS
-from speech_recognition import Recognizer, AudioFile
+from speech_recognition import Recognizer, Microphone
 import os
 
-# Ensure necessary NLTK data is downloaded and accessible
+# Ensure necessary NLTK data is available
 nltk_data_path = os.path.join(os.getcwd(), "nltk_data")
 if not os.path.exists(nltk_data_path):
     os.makedirs(nltk_data_path)
@@ -17,7 +17,35 @@ except LookupError:
     nltk.download('punkt', download_dir=nltk_data_path)
     nltk.data.path.append(os.path.join(nltk_data_path, "tokenizers"))
 
-# Braille and punctuation mappings
+# Custom CSS for styling
+st.markdown("""
+    <style>
+    body {
+        background-color: #f5f3e7;
+        color: #4b3f2f;
+        font-family: 'Helvetica', sans-serif;
+    }
+    .main .block-container {
+        background-color: #f5f3e7;
+    }
+    .stButton>button {
+        background-color: #d2b48c;
+        color: #fff;
+        border-radius: 10px;
+        border: none;
+        padding: 10px 20px;
+        margin: 5px;
+    }
+    .stTextInput>div>div>input {
+        background-color: #fdf6e3;
+        color: #4b3f2f;
+        border: 1px solid #d2b48c;
+        border-radius: 5px;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+# Braille Mappings
 braille_dict = {
     'a': '100000', 'b': '101000', 'c': '110000', 'd': '110100', 'e': '100100',
     'f': '111000', 'g': '111100', 'h': '101100', 'i': '011000', 'j': '011100',
@@ -36,28 +64,21 @@ unicode_braille_map = {
     '100111': '⠵', '000000': '⠠'
 }
 
-punctuation_unicode_map = {
-    '.': '⠲', ',': '⠂', '?': '⠦', '!': '⠖', ';': '⠆', ':': '⠒', '"': '⠶',
-    "'": '⠄', '(': '⠷', ')': '⠾', '-': '⠤'
-}
-
 def convert_to_braille_unicode(text):
     """Converts a given text to Braille Unicode representation."""
     text = text.lower()
-    tokens = nltk.word_tokenize(text)  # This is now fixed with NLTK's punkt handling
+    tokens = nltk.word_tokenize(text)  
     braille_output = []
-    
+
     for token in tokens:
         for char in token:
             if char in braille_dict:
                 braille_output.append(unicode_braille_map[braille_dict[char]])
-            elif char in punctuation_unicode_map:
-                braille_output.append(punctuation_unicode_map[char])
             elif char.isdigit():
                 braille_output.append('⠴')  # Braille number prefix
                 braille_output.append(unicode_braille_map[braille_dict[char]])
             elif char == ' ':
-                braille_output.append('⠠')  # Space character
+                braille_output.append('⠠')
             else:
                 braille_output.append('⠿')  # Unknown character
     return ''.join(braille_output)
@@ -68,22 +89,8 @@ def text_to_speech(text):
     tts.save("output.mp3")
     return "output.mp3"
 
-def process_audio(uploaded_file):
-    """Processes uploaded audio file and converts speech to text."""
-    recognizer = Recognizer()
-    with AudioFile(uploaded_file) as source:
-        audio_data = recognizer.record(source)
-        try:
-            text = recognizer.recognize_google(audio_data)
-            return text
-        except Exception:
-            return None
-
-# Streamlit UI
-st.set_page_config(page_title="Speech-to-Braille Converter", page_icon="🧠", layout="centered")
-
 st.title("🧠 Speech-to-Braille Converter")
-st.write("Convert your speech or text into Braille with an elegant cream-brown interface.")
+st.write("Convert your speech or text into Braille with an elegant interface.")
 
 option = st.radio("Choose an option:", ["Enter text manually", "Use speech input"])
 
@@ -92,13 +99,17 @@ input_text = ""
 if option == "Enter text manually":
     input_text = st.text_input("Enter your text:")
 elif option == "Use speech input":
-    uploaded_audio = st.file_uploader("Upload your audio file (WAV or MP3)", type=["wav", "mp3"])
-    if uploaded_audio is not None:
-        input_text = process_audio(uploaded_audio)
-        if input_text:
-            st.success(f"Recognized Text: {input_text}")
-        else:
-            st.error("Sorry, could not recognize the speech.")
+    st.info("Click the button and speak...")
+    if st.button("🎙️ Start Recording"):
+        recognizer = Recognizer()
+        with Microphone() as source:
+            st.write("Listening...")
+            audio = recognizer.listen(source)
+            try:
+                input_text = recognizer.recognize_google(audio)
+                st.success(f"Recognized Text: {input_text}")
+            except Exception as e:
+                st.error(f"Error: {e}")
 
 if input_text:
     braille_unicode = convert_to_braille_unicode(input_text)
