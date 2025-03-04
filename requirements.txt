@@ -1,5 +1,5 @@
 streamlit
-nltk>=3.6
+nltk
 gtts
 speechrecognition
-punkt  # Ensure punkt tokenizer is available
+pydub
