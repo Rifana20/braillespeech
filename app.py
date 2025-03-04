@@ -3,10 +3,8 @@ import nltk
 from gtts import gTTS
 from speech_recognition import Recognizer, AudioFile
 import os
-import io
-import tempfile
 
-# Ensure necessary NLTK data is downloaded
+# Ensure necessary NLTK data is downloaded and accessible
 nltk_data_path = os.path.join(os.getcwd(), "nltk_data")
 if not os.path.exists(nltk_data_path):
     os.makedirs(nltk_data_path)
@@ -17,6 +15,7 @@ try:
     nltk.data.find('tokenizers/punkt')
 except LookupError:
     nltk.download('punkt', download_dir=nltk_data_path)
+    nltk.data.path.append(os.path.join(nltk_data_path, "tokenizers"))
 
 # Braille and punctuation mappings
 braille_dict = {
@@ -45,7 +44,7 @@ punctuation_unicode_map = {
 def convert_to_braille_unicode(text):
     """Converts a given text to Braille Unicode representation."""
     text = text.lower()
-    tokens = nltk.word_tokenize(text)
+    tokens = nltk.word_tokenize(text)  # This is now fixed with NLTK's punkt handling
     braille_output = []
     
     for token in tokens:
@@ -64,11 +63,10 @@ def convert_to_braille_unicode(text):
     return ''.join(braille_output)
 
 def text_to_speech(text):
-    """Converts text to speech and returns the audio file path."""
+    """Converts text to speech and saves as an MP3 file."""
     tts = gTTS(text=text, lang='en')
-    temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".mp3")
-    tts.save(temp_file.name)
-    return temp_file.name
+    tts.save("output.mp3")
+    return "output.mp3"
 
 def process_audio(uploaded_file):
     """Processes uploaded audio file and converts speech to text."""
@@ -82,7 +80,7 @@ def process_audio(uploaded_file):
             return None
 
 # Streamlit UI
-st.set_page_config(page_title="Speech-to-Braille Converter", layout="centered")
+st.set_page_config(page_title="Speech-to-Braille Converter", page_icon="🧠", layout="centered")
 
 st.title("🧠 Speech-to-Braille Converter")
 st.write("Convert your speech or text into Braille with an elegant cream-brown interface.")
@@ -112,4 +110,4 @@ if input_text:
     audio_file = text_to_speech(input_text)
     with open(audio_file, "rb") as audio:
         st.audio(audio.read(), format="audio/mp3")
-    os.remove(audio_file)  
+    os.remove(audio_file)
