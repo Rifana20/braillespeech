@@ -4,43 +4,21 @@ from gtts import gTTS
 from speech_recognition import Recognizer, Microphone
 import os
 
-# Ensure necessary NLTK data is available
-try:
-    nltk.data.find('tokenizers/punkt')
-except LookupError:
+# Download required NLTK data
+@st.cache_data
+def download_nltk_data():
     nltk.download('punkt')
+
+download_nltk_data()
 
 # Custom CSS for styling
 st.markdown("""
     <style>
-    body {
-        background-color: #f5f3e7;
-        color: #4b3f2f;
-        font-family: 'Helvetica', sans-serif;
-    }
-    .main .block-container {
-        background-color: #f5f3e7;
-    }
-    .stButton>button {
-        background-color: #d2b48c;
-        color: #fff;
-        border-radius: 10px;
-        border: none;
-        padding: 10px 20px;
-        margin: 5px;
-    }
-    .stTextInput>div>div>input {
-        background-color: #fdf6e3;
-        color: #4b3f2f;
-        border: 1px solid #d2b48c;
-        border-radius: 5px;
-    }
-    .stRadio>div>div {
-        background-color: #d2b48c;
-        color: #fff;
-        border-radius: 5px;
-        padding: 5px;
-    }
+    body { background-color: #f5f3e7; color: #4b3f2f; font-family: 'Helvetica', sans-serif; }
+    .main .block-container { background-color: #f5f3e7; }
+    .stButton>button { background-color: #d2b48c; color: #fff; border-radius: 10px; padding: 10px 20px; margin: 5px; }
+    .stTextInput>div>div>input { background-color: #fdf6e3; color: #4b3f2f; border: 1px solid #d2b48c; border-radius: 5px; }
+    .stRadio>div>div { background-color: #d2b48c; color: #fff; border-radius: 5px; padding: 5px; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -79,7 +57,8 @@ def convert_to_braille_unicode(text):
             elif char in punctuation_unicode_map:
                 braille_output.append(punctuation_unicode_map[char])
             elif char.isdigit():
-                braille_output.append('⠴' + unicode_braille_map[braille_dict[char]])
+                braille_output.append('⠴')
+                braille_output.append(unicode_braille_map[braille_dict[char]])
             elif char == ' ':
                 braille_output.append('⠠')
             else:
@@ -100,18 +79,19 @@ input_text = ""
 
 if option == "Enter text manually":
     input_text = st.text_input("Enter your text:")
+
 elif option == "Use speech input":
     st.info("Click the button and speak...")
     if st.button("🎙️ Start Recording"):
         recognizer = Recognizer()
         with Microphone() as source:
             st.write("Listening...")
-            audio = recognizer.listen(source)
             try:
+                audio = recognizer.listen(source, timeout=5)
                 input_text = recognizer.recognize_google(audio)
                 st.success(f"Recognized Text: {input_text}")
             except Exception as e:
-                st.error(f"Error: {e}")
+                st.error(f"Error: {str(e)}")
 
 if input_text:
     braille_unicode = convert_to_braille_unicode(input_text)
@@ -127,5 +107,5 @@ if input_text:
 
 st.sidebar.title("⚙️ Deployment Guide")
 st.sidebar.write("Run the following command to launch this app:")
-st.sidebar.code("streamlit run app.py")
+st.sidebar.code("streamlit run main.py")
 st.sidebar.write("To deploy on Streamlit Cloud, push your code to GitHub and link your repo.")
