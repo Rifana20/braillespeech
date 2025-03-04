@@ -2,3 +2,4 @@ streamlit
 nltk>=3.6
 gtts
 speechrecognition
+pydub  # Required for handling MP3 files in some environments
