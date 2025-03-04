@@ -2,5 +2,4 @@ streamlit
 nltk>=3.6
 gtts
 speechrecognition
-pydub  # Required for handling MP3 files
-ffmpeg  # Required for speech recognition and audio processing
+punkt  # Ensure punkt tokenizer is available
