@@ -1,10 +1,13 @@
 import streamlit as st
-from gtts import gTTS
-from speech_recognition import Recognizer
-import sounddevice as sd
-import numpy as np
-import io
 import os
+from gtts import gTTS
+import speech_recognition as sr
+from io import BytesIO
+from streamlit.components.v1 import html
+
+# Title for the app
+st.title("🧠 Speech-to-Braille Converter")
+st.write("Convert your speech or text into Braille.")
 
 # Custom CSS for styling
 st.markdown("""
@@ -28,7 +31,40 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Braille dictionary
+# Simple JavaScript to capture speech from the browser and send it to the Streamlit backend
+speech_recognition_js = """
+<script>
+    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.lang = 'en-US';
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    function startRecording() {
+        recognition.start();
+        document.getElementById('status').innerText = 'Listening...';
+    }
+
+    recognition.onresult = function(event) {
+        const transcript = event.results[0][0].transcript;
+        window.parent.postMessage({type: 'speech', text: transcript}, '*');
+    }
+
+    recognition.onerror = function(event) {
+        document.getElementById('status').innerText = 'Error occurred: ' + event.error;
+    }
+</script>
+<button onclick="startRecording()">Start Recording</button>
+<p id="status"></p>
+"""
+
+# Display the JavaScript component to capture speech
+html(speech_recognition_js)
+
+# Process the speech after capturing it
+st.write("Recognized text will appear here:")
+input_text = st.text_input("Recognized Text")
+
+# Process the input text with Braille conversion
 braille_dict = {
     'a': '100000', 'b': '101000', 'c': '110000', 'd': '110100', 'e': '100100',
     'f': '111000', 'g': '111100', 'h': '101100', 'i': '011000', 'j': '011100',
@@ -59,39 +95,7 @@ def convert_to_braille_unicode(text):
     
     return ''.join(braille_output)
 
-def text_to_speech(text):
-    tts = gTTS(text=text, lang='en')
-    tts.save("output.mp3")
-    return "output.mp3"
-
-# Function to record audio using sounddevice
-def record_audio(duration=5, samplerate=44100):
-    st.write("Listening...")
-    # Record audio for 5 seconds
-    audio_data = sd.rec(int(samplerate * duration), samplerate=samplerate, channels=1, dtype='int16')
-    sd.wait()  # Wait until the recording is finished
-    return audio_data
-
-st.title("🧠 Speech-to-Braille Converter")
-st.write("Convert your speech or text into Braille.")
-
-option = st.radio("Choose an option:", ["Enter text manually", "Use speech input"])
-
-input_text = ""
-
-if option == "Enter text manually":
-    input_text = st.text_input("Enter your text:")
-elif option == "Use speech input":
-    if st.button("🎙️ Start Recording"):
-        audio_data = record_audio()  # Record using sounddevice
-        recognizer = Recognizer()
-        audio = recognizer.record(audio_data, duration=5)  # Use recorded audio data for recognition
-        try:
-            input_text = recognizer.recognize_google(audio)
-            st.success(f"Recognized Text: {input_text}")
-        except Exception as e:
-            st.error(f"Error: {e}")
-
+# Display the result
 if input_text:
     braille_unicode = convert_to_braille_unicode(input_text)
     st.subheader("🔤 Original Text")
@@ -99,7 +103,9 @@ if input_text:
     st.subheader("🟤 Braille Representation")
     st.write(braille_unicode)
 
-    audio_file = text_to_speech(input_text)
-    with open(audio_file, "rb") as audio:
-        st.audio(audio.read(), format="audio/mp3")
-    os.remove(audio_file)
+    # Text-to-speech using gTTS
+    tts = gTTS(text=input_text, lang='en')
+    audio_file = "output.mp3"
+    tts.save(audio_file)
+    st.audio(audio_file, format="audio/mp3")
+    os.remove(audio_file)  # Clean up the saved audio file
