@@ -1,7 +1,6 @@
 import streamlit as st
 import os
 from gtts import gTTS
-import speech_recognition as sr
 from io import BytesIO
 from streamlit.components.v1 import html
 
