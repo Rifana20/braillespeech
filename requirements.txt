@@ -1,5 +1,6 @@
-streamlit
 gtts
 SpeechRecognition
 pydub
+pyaudio
+
 
