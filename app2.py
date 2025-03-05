@@ -1,7 +1,6 @@
 import streamlit as st
 import os
 from gtts import gTTS
-from io import BytesIO
 from streamlit.components.v1 import html
 
 # Title for the app
@@ -62,8 +61,8 @@ speech_recognition_js = """
 # Display the JavaScript component to capture speech
 html(speech_recognition_js)
 
-# Receive recognized speech from JavaScript and update Streamlit input
-recognized_text = st.text_input("Recognized Text")
+# Define the placeholder for recognized text
+recognized_text = st.text_input("Recognized Text", key="recognized_text")
 
 # Process the input text with Braille conversion
 braille_dict = {
