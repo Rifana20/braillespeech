@@ -45,13 +45,16 @@ speech_recognition_js = """
 
     recognition.onresult = function(event) {
         const transcript = event.results[0][0].transcript;
+        // Send the recognized text back to the parent window (Streamlit)
         window.parent.postMessage({type: 'speech', text: transcript}, '*');
+        document.getElementById('status').innerText = 'You said: ' + transcript;
     }
 
     recognition.onerror = function(event) {
         document.getElementById('status').innerText = 'Error occurred: ' + event.error;
     }
 </script>
+
 <button onclick="startRecording()">Start Recording</button>
 <p id="status"></p>
 """
@@ -59,9 +62,8 @@ speech_recognition_js = """
 # Display the JavaScript component to capture speech
 html(speech_recognition_js)
 
-# Process the speech after capturing it
-st.write("Recognized text will appear here:")
-input_text = st.text_input("Recognized Text")
+# Receive recognized speech from JavaScript and update Streamlit input
+recognized_text = st.text_input("Recognized Text")
 
 # Process the input text with Braille conversion
 braille_dict = {
@@ -95,15 +97,15 @@ def convert_to_braille_unicode(text):
     return ''.join(braille_output)
 
 # Display the result
-if input_text:
-    braille_unicode = convert_to_braille_unicode(input_text)
+if recognized_text:
+    braille_unicode = convert_to_braille_unicode(recognized_text)
     st.subheader("🔤 Original Text")
-    st.write(input_text)
+    st.write(recognized_text)
     st.subheader("🟤 Braille Representation")
     st.write(braille_unicode)
 
     # Text-to-speech using gTTS
-    tts = gTTS(text=input_text, lang='en')
+    tts = gTTS(text=recognized_text, lang='en')
     audio_file = "output.mp3"
     tts.save(audio_file)
     st.audio(audio_file, format="audio/mp3")
